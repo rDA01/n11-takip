@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import psycopg2
 from psycopg2 import Error
 import os
+import threading
+
 
 class LoggingConfigurator:
     def __init__(self):
@@ -46,34 +48,41 @@ class GatherData(LoggingConfigurator):
     def __init__(self):
         self.base_url="https://www.trendyol.com/akilli-cep-telefonu-x-c109460?pi="
 
+    def gather_page_number(self,base_url, i):
+        try:
+            response = requests.get(base_url + str(i))
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                div_count = len(soup.find_all('div', class_='p-card-chldrn-cntnr card-border'))
+                print("Number of div elements with class 'p-card-chldrn-cntnr card-border':", div_count)
+                print(base_url + str(i))
+                if div_count != 24:
+                    return False
+            else:
+                print("Failed to retrieve page:", response.status_code)
+                return False
+        except Exception as err:
+            print(err)
+        return True
 
-    def GatherPageNumber(self) -> None :
-        loop_var=True
-        while True:
-            try:
-                response = requests.get(self.base_url+str(i))
-                #self.logger.error("Gathered the url for updating items getting sold")
-                if response.status_code == 200:
-                    soup = BeautifulSoup(response.content, 'html.parser')
-                    div_count = len(soup.find_all('div', class_='p-card-chldrn-cntnr card-border'))
-                    print("Number of div elements with class 'p-card-chldrn-cntnr card-border':", div_count)
-                    print(self.base_url+str(i))
-                    if div_count != 24:
-                        loop_var=False
-                    
-                    #self.logger.error("Gathered the url for updating items getting sold , total count on page")
-                else:
-                    print("Failed to retrieve page:", response.status_code)
-                    return None
-            except Exception as err:
-                #self.logger.error("An error occured while collecting the page items , skipping the page {response.status_code} {err}")
-                print(err)
-            i+=1
-
+    def gather_page_numbers(self):
+        base_url=self.base_url
+        loop_var = True
+        i = 1  # Initialize counter
+        while loop_var:
+            threads = []
+            for _ in range(50):  # Number of threads you want to spawn
+                t = threading.Thread(target=self.gather_page_number, args=(base_url, i))
+                t.start()
+                threads.append(t)
+                i += 1
+            for t in threads:
+                t.join()
+            loop_var = all(self.gather_page_number(base_url, i) for i in range(i, i + 50))
 def Main():
     #client=DBClient()
     #print(client)
     new=GatherData()
-    new.GatherPageNumber()
+    new.gather_page_numbers()
 
 Main()
