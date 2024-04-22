@@ -6,7 +6,6 @@ from psycopg2 import Error
 import os
 import threading
 
-
 class LoggingConfigurator:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -44,9 +43,11 @@ class DBClient(LoggingConfigurator):
         except (Exception, Error) as error:
             self.logger.error("Error while connecting to PostgreSQL", exc_info=True)
 
-class GatherData(LoggingConfigurator):
+class GatherPages(LoggingConfigurator):
     def __init__(self):
         self.base_url="https://www.trendyol.com/akilli-cep-telefonu-x-c109460?pi="
+        self.page_count=0
+        self.item_count=0
 
     def gather_page_number(self,base_url, i):
         try:
@@ -57,6 +58,8 @@ class GatherData(LoggingConfigurator):
                 print("Number of div elements with class 'p-card-chldrn-cntnr card-border':", div_count)
                 print(base_url + str(i))
                 if div_count != 24:
+                    self.item_count=(i*24)+div_count
+                    self.page_count=i
                     return False
             else:
                 print("Failed to retrieve page:", response.status_code)
@@ -68,10 +71,10 @@ class GatherData(LoggingConfigurator):
     def gather_page_numbers(self):
         base_url=self.base_url
         loop_var = True
-        i = 1  # Initialize counter
+        i = 1
         while loop_var:
             threads = []
-            for _ in range(50):  # Number of threads you want to spawn
+            for _ in range(50):
                 t = threading.Thread(target=self.gather_page_number, args=(base_url, i))
                 t.start()
                 threads.append(t)
@@ -79,10 +82,15 @@ class GatherData(LoggingConfigurator):
             for t in threads:
                 t.join()
             loop_var = all(self.gather_page_number(base_url, i) for i in range(i, i + 50))
+
+class InsertData(LoggingConfigurator):
+    def __init__(GatherPages):
+        pass
+
 def Main():
     #client=DBClient()
     #print(client)
-    new=GatherData()
+    new=GatherPages()
     new.gather_page_numbers()
 
 Main()
