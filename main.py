@@ -47,33 +47,33 @@ class GatherData(LoggingConfigurator):
         self.base_url="https://www.trendyol.com/akilli-cep-telefonu-x-c109460?pi="
 
 
-    def GatherPageNumber(self) -> int :
+    def GatherPageNumber(self) -> None :
+        loop_var=True
         while True:
             try:
-                response = requests.get(self.url)
-                self.logger.error("Gathered the url for updating items getting sold")
+                response = requests.get(self.base_url+str(i))
+                #self.logger.error("Gathered the url for updating items getting sold")
                 if response.status_code == 200:
                     soup = BeautifulSoup(response.content, 'html.parser')
-                    items = soup.find_all('div', class_='item')  # Adjust class name accordingly
-                    self.logger.error("Gathered the url for updating items getting sold , total count on page")
+                    div_count = len(soup.find_all('div', class_='p-card-chldrn-cntnr card-border'))
+                    print("Number of div elements with class 'p-card-chldrn-cntnr card-border':", div_count)
+                    print(self.base_url+str(i))
+                    if div_count != 24:
+                        loop_var=False
+                    
+                    #self.logger.error("Gathered the url for updating items getting sold , total count on page")
                 else:
                     print("Failed to retrieve page:", response.status_code)
                     return None
             except Exception as err:
-                self.logger.error("An error occured while collecting the page items , skipping the page")
-
-def get_pages():
-    response = requests.get(url)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        links = soup.find_all('a')
-        for link in links:
-            print(link.get('href'))
-    else:
-        print('Failed to retrieve webpage. Status code:', response.status_code)
+                #self.logger.error("An error occured while collecting the page items , skipping the page {response.status_code} {err}")
+                print(err)
+            i+=1
 
 def Main():
-    client=DBClient()
-    print(client)
+    #client=DBClient()
+    #print(client)
+    new=GatherData()
+    new.GatherPageNumber()
 
 Main()
