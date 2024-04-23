@@ -43,11 +43,12 @@ class DBClient(LoggingConfigurator):
         except (Exception, Error) as error:
             self.logger.error("Error while connecting to PostgreSQL", exc_info=True)
 
-class GatherPages(LoggingConfigurator):
+class GatherPagesItems(LoggingConfigurator):
     def __init__(self):
         self.base_url="https://www.trendyol.com/akilli-cep-telefonu-x-c109460?pi="
         self.page_count=0
         self.item_count=0
+        item_info={}
 
     def gather_page_number(self,base_url, i):
         try:
@@ -55,8 +56,20 @@ class GatherPages(LoggingConfigurator):
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, 'html.parser')
                 div_count = len(soup.find_all('div', class_='p-card-chldrn-cntnr card-border'))
+                divs = soup.find_all('div', class_='p-card-chldrn-cntnr card-border')
                 print("Number of div elements with class 'p-card-chldrn-cntnr card-border':", div_count)
-                print(base_url + str(i))
+                for div in divs:
+                    h3 = div.find('h3', class_='prdct-desc-cntnr-ttl-w two-line-text')
+                    a = div.find('a', href=True)
+                    prc_box_dscntd= div.find('div',class_='class="prc-box-dscntd"')
+                    if h3 and a:
+                        title = h3.get_text(strip=True)
+                        href = a['href']
+                        print("Title:", title)
+                        print("Href:", href)
+                        print("price", prc_box_dscntd.get_text(strip=True))
+                    else:
+                        print("Either h3 or a tag not found within this div.")
                 if div_count != 24:
                     self.item_count=(i*24)+div_count
                     self.page_count=i
@@ -90,7 +103,7 @@ class InsertData(LoggingConfigurator):
 def Main():
     #client=DBClient()
     #print(client)
-    new=GatherPages()
+    new=GatherPagesItems()
     new.gather_page_numbers()
 
 Main()
