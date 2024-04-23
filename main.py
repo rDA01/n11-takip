@@ -1,14 +1,12 @@
 import logging
 import requests
 from bs4 import BeautifulSoup
-import psycopg2
-from psycopg2 import Error
-import os
 import threading
 import re
 
 from data.entities.product import Product
 from data.repositories.productRepository import ProductRepository
+from service.productService import ProductService
 
 class LoggingConfigurator:
     def __init__(self):
@@ -46,13 +44,17 @@ class GatherPagesItems(LoggingConfigurator):
                         title = h3.get_text(strip=True)
                         href = a['href']
 
-                        price_text = prc_box_dscntd.get_text(strip=True)
-                        price_numeric_part = re.search(r'[\d.,]+', price_text).group()
-                        price = float(price_numeric_part.replace(',', ''))
-                        
-                        product = Product(title=title, link=href, price=price)
-                        
-                        self.product_repo.add_product(product)
+                        item =  self.product_repo.get_product_by_link(href)
+                        if item is False:
+                            price_text = prc_box_dscntd.text.strip()
+                            price = float(''.join(filter(str.isdigit, price_text)))
+
+                            product = Product(title=title, link=href, price=price)
+                            
+                            self.product_repo.add_product(product)
+                        else:
+                            # Product already exists in the database
+                            print("Item exists.")
                     else:
                         print("Incomplete data found in div, skipping.")
                 
@@ -89,5 +91,8 @@ def Main():
     product_repo = ProductRepository()
     new = GatherPagesItems(product_repo)
     new.gather_page_numbers()
+
+    productService = ProductService(product_repo)
+    productService.updateProduct()
 
 Main()

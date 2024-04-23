@@ -2,6 +2,8 @@ import psycopg2
 import uuid
 from datetime import datetime
 
+from data.entities.product import Product
+
 class ProductRepository:
     def __init__(self):
         db_params = {
@@ -36,6 +38,15 @@ class ProductRepository:
         print("new item added")
         self.conn.commit()
 
+    def get_all_product_links(self):
+        try:
+            self.cursor.execute("SELECT Link FROM Products")
+            rows = self.cursor.fetchall()
+            links = [row[0] for row in rows]
+            return links
+        except Exception as e:
+            print("Error occurred during SQL query:", e)
+
     def get_product_by_id(self, product_id):
         self.cursor.execute("SELECT * FROM Products WHERE Id=%s", (product_id,))
         row = self.cursor.fetchone()
@@ -43,6 +54,21 @@ class ProductRepository:
             return self._row_to_product(row)
         else:
             return None
+
+
+    def get_product_by_link(self, link):
+        try:
+            link = link.strip().lower()
+
+            self.cursor.execute("SELECT * FROM Products WHERE lower(trim(link)) = %s", (link,))
+            row = self.cursor.fetchone()
+
+            if row:
+                return self._row_to_product(row)
+            else:
+                return False
+        except Exception as e:
+            print("Error occurred during SQL query:", e)
 
     def update_product(self, product):
         self.cursor.execute('''UPDATE Products SET Title=%s, Link=%s, Price=%s, UpdatedAt=%s, IsDeleted=%s
@@ -56,7 +82,13 @@ class ProductRepository:
         self.conn.commit()
 
     def _row_to_product(self, row):
-        return Product(row[1], row[2], row[3], row[4], row[5], row[6])
+        return Product(
+            row[1],
+            row[2],
+            row[3],
+            row[4],
+            row[5],
+            row[6])
 
     def close(self):
         self.conn.close()
