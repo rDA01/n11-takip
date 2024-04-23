@@ -78,15 +78,17 @@ class GatherPagesItems(LoggingConfigurator):
         loop_var = True
         i = 1
         while loop_var:
-            threads = []
-            for _ in range(50):
-                t = threading.Thread(target=self.gather_page_number, args=(base_url, i))
-                t.start()
-                threads.append(t)
-                i += 1
-            for t in threads:
-                t.join()
-            loop_var = all(self.gather_page_number(base_url, i) for i in range(i, i + 50))
+            #threads = []
+            #for _ in range(50):
+            #    t = threading.Thread(target=self.gather_page_number, args=(base_url, i))
+            #    t.start()
+            #    threads.append(t)
+            #    i += 1
+            #for t in threads:
+            #    t.join()
+
+            loop_var = self.gather_page_number(base_url, i)
+            i = i + 1
 
 async def Main():
     product_repo = ProductRepository()
