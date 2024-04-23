@@ -1,12 +1,13 @@
+import asyncio
 import logging
 import requests
 from bs4 import BeautifulSoup
 import threading
-import re
 
 from data.entities.product import Product
 from data.repositories.productRepository import ProductRepository
 from service.productService import ProductService
+from service.telegramService import TelegramService
 
 class LoggingConfigurator:
     def __init__(self):
@@ -87,12 +88,14 @@ class GatherPagesItems(LoggingConfigurator):
                 t.join()
             loop_var = all(self.gather_page_number(base_url, i) for i in range(i, i + 50))
 
-def Main():
+async def Main():
     product_repo = ProductRepository()
     new = GatherPagesItems(product_repo)
     new.gather_page_numbers()
 
-    productService = ProductService(product_repo)
-    productService.updateProduct()
+    telegram_service = TelegramService(bot_token='7043445528:AAF6FuY4eOBOVVOyZRhfK24pXb2E7yiK7r8', chat_id='1824983618')
 
-Main()
+    productService = ProductService(product_repo, telegram_service)
+    await productService.updateProduct()
+
+asyncio.run(Main())

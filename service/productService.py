@@ -5,11 +5,14 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
+from service.telegramService import TelegramService
+
 class ProductService:
-    def __init__(self, repository: ProductRepository):
+    def __init__(self, repository: ProductRepository, telegram_service: TelegramService):
         self.repository = repository
+        self.telegram_service = telegram_service
         self.base_url = "https://trendyol.com"
-    def updateProduct(self):
+    async def updateProduct(self):
         links = self.repository.get_all_product_links()
 
         for link in links:
@@ -25,7 +28,6 @@ class ProductService:
                     if price_span:
                         price_text = price_span.text.strip()
                         price_numeric = float(''.join(filter(str.isdigit, price_text)))
-                        #print("price numeric:" , price_numeric)
                         product = self.repository.get_product_by_link(link)
 
                         if product:
@@ -34,7 +36,9 @@ class ProductService:
 
                                 product.price = price_numeric
                                 self.repository.update_product(product)
-                                #print(f"Product price updated: {product.title}")
+                                 # Send message to Telegram group
+                                message = f"Price of {product.title} has been updated. New price: {price_numeric}"
+                                await self.telegram_service.send_message(message)
                             else:
                                 print("Product price is remaining the same")
                         else:
