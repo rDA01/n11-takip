@@ -33,13 +33,19 @@ class ProductService:
                         if product:
                             if product.price != price_numeric:
                                 print("existing price: ", product.price, '\n', "new price: ", price_numeric)
+                                
                                 old_price = product.price
+                                
+                                isInstallment = old_price > price_numeric
+                                
                                 product.price = price_numeric
                                 self.repository.update_product(product)
                                  # Send message to Telegram group
                                 #message = f"Price of {product.title} has been updated. New price: {price_numeric}"
-                                message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatı değişmiştir. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
-
+                                if(isInstallment):
+                                    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
+                                else:
+                                    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında artış oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
                                 await self.telegram_service.send_message(message)
                             else:
                                 print("Product price is remaining the same")
