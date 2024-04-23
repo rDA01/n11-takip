@@ -90,12 +90,16 @@ class GatherPagesItems(LoggingConfigurator):
 
 async def Main():
     product_repo = ProductRepository()
+
     new = GatherPagesItems(product_repo)
+    
     new.gather_page_numbers()
 
     telegram_service = TelegramService(bot_token='7043445528:AAF6FuY4eOBOVVOyZRhfK24pXb2E7yiK7r8', chat_id='1824983618')
 
     productService = ProductService(product_repo, telegram_service)
-    await productService.updateProduct()
+
+    while True:
+        await productService.updateProduct()
 
 asyncio.run(Main())
