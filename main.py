@@ -29,7 +29,7 @@ class GatherPagesItems(LoggingConfigurator):
         self.item_count=0
         self.product_repo = product_repo
 
-    def gather_page_number(self, base_url, i):
+    async def gather_page_number(self, base_url, i):
         try:
             response = requests.get(base_url + str(i))
             if response.status_code == 200:
@@ -73,7 +73,7 @@ class GatherPagesItems(LoggingConfigurator):
         
         return True
 
-    def gather_page_numbers(self):
+    async def gather_page_numbers(self):
         base_url = self.base_url
         loop_var = True
         i = 1
@@ -87,7 +87,7 @@ class GatherPagesItems(LoggingConfigurator):
             #for t in threads:
             #    t.join()
 
-            loop_var = self.gather_page_number(base_url, i)
+            loop_var = await self.gather_page_number(base_url, i)
             i = i + 1
 
 async def Main():
@@ -95,9 +95,9 @@ async def Main():
 
     new = GatherPagesItems(product_repo)
     
-    new.gather_page_numbers()
+    await new.gather_page_numbers()
 
-    telegram_service = TelegramService(bot_token='7043445528:AAF6FuY4eOBOVVOyZRhfK24pXb2E7yiK7r8', chat_id='-4175148881')
+    telegram_service = TelegramService(bot_token='7043445528:AAF6FuY4eOBOVVOyZRhfK24pXb2E7yiK7r8', chat_id='-1002119312673')
 
     productService = ProductService(product_repo, telegram_service)
 

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from data.repositories.productRepository import ProductRepository
 from data.entities.product import Product
 
@@ -35,17 +36,18 @@ class ProductService:
                                 print("existing price: ", product.price, '\n', "new price: ", price_numeric)
                                 
                                 old_price = product.price
-                                
-                                isInstallment = old_price > price_numeric
-                                
+
+                                isInstallment = price_numeric <= old_price * Decimal('0.95')
+
                                 product.price = price_numeric
                                 self.repository.update_product(product)
-                                
+
                                 if(isInstallment):
+                                    print("installment catched, product link: ", product.link)
                                     message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
-                                else:
-                                    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında artış oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
-                                await self.telegram_service.send_message(message)
+                                #else:
+                                #    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında artış oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
+                                    await self.telegram_service.send_message(message)
                             else:
                                 print("Product price is remaining the same")
                         else:
