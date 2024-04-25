@@ -103,6 +103,6 @@ async def Main():
     productService = ProductService(product_repo, telegram_service)
 
     while True:
-        productService.updateProduct()
+        await productService.updateProduct()
 
 asyncio.run(Main())

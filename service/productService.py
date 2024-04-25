@@ -13,7 +13,7 @@ class ProductService:
         self.repository = repository
         self.telegram_service = telegram_service
         self.base_url = "https://trendyol.com"
-    def updateProduct(self):
+    async def updateProduct(self):
         links = self.repository.get_all_product_links()
 
         for link in links:
@@ -46,8 +46,8 @@ class ProductService:
                                 if(isInstallment):
                                     print("installment catched, product link: ", product.link)
                                     message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
-                                    #await self.telegram_service.send_message(message)
-                                    print(message)
+                                    await self.telegram_service.send_message(message)
+                                    #print(message)
                             else:
                                 print("Product price is remaining the same")
                         else:
