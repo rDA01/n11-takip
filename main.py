@@ -48,9 +48,10 @@ class GatherPagesItems(LoggingConfigurator):
                         item =  self.product_repo.get_product_by_link(href)
                         if item is False:
                             price_text = prc_box_dscntd.text.strip()
-                            price = float(''.join(filter(str.isdigit, price_text)))
+                            price_text = price_text.replace('.', '').replace(',', '.')  # Replace comma with dot
+                            price = float(''.join(filter(lambda x: x.isdigit() or x == '.', price_text)))
 
-                            product = Product(title=title, link=href, price=price)
+                            product = Product(id=None,title=title, link=href, price=price)
                             
                             self.product_repo.add_product(product)
                         else:
@@ -102,6 +103,6 @@ async def Main():
     productService = ProductService(product_repo, telegram_service)
 
     while True:
-        await productService.updateProduct()
+        productService.updateProduct()
 
 asyncio.run(Main())

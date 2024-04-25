@@ -71,11 +71,16 @@ class ProductRepository:
             print("Error occurred during SQL query:", e)
 
     def update_product(self, product):
-        self.cursor.execute('''UPDATE Products SET Title=%s, Link=%s, Price=%s, UpdatedAt=%s, IsDeleted=%s
-                                WHERE Id=%s''',
-                            (product.title, product.link, product.price, datetime.now(),
-                             product.is_deleted, product.id))
-        self.conn.commit()
+        try:
+            self.cursor.execute('''UPDATE Products SET Title=%s, Link=%s, Price=%s, UpdatedAt=%s, IsDeleted=%s
+                                    WHERE Id=%s''',
+                                (product.title, product.link, product.price, datetime.now(),
+                                product.is_deleted, product.id))
+            self.conn.commit()
+            print("product updated successfully. id: ", product.id, "product new price: ", product.price)
+        except Exception as err:
+            print("error while updating the product: ", err)
+            self.conn.rollback()  # Rollback changes if an error occurs
 
     def delete_product(self, product_id):
         self.cursor.execute("DELETE FROM Products WHERE Id=%s", (product_id,))
@@ -83,6 +88,7 @@ class ProductRepository:
 
     def _row_to_product(self, row):
         return Product(
+            row[0],
             row[1],
             row[2],
             row[3],

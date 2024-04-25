@@ -13,7 +13,7 @@ class ProductService:
         self.repository = repository
         self.telegram_service = telegram_service
         self.base_url = "https://trendyol.com"
-    async def updateProduct(self):
+    def updateProduct(self):
         links = self.repository.get_all_product_links()
 
         for link in links:
@@ -28,26 +28,26 @@ class ProductService:
 
                     if price_span:
                         price_text = price_span.text.strip()
-                        price_numeric = float(''.join(filter(str.isdigit, price_text)))
+                        price_text = price_text.replace('.', '').replace(',', '.')  # Replace comma with dot
+                        price_numeric = float(''.join(filter(lambda x: x.isdigit() or x == '.', price_text)))
                         product = self.repository.get_product_by_link(link)
 
                         if product:
                             if product.price != price_numeric:
                                 print("existing price: ", product.price, '\n', "new price: ", price_numeric)
                                 
-                                old_price = product.price
+                                old_price = Decimal(product.price)
 
-                                isInstallment = price_numeric <= old_price * Decimal('0.95')
+                                isInstallment = Decimal(price_numeric) <= old_price * Decimal(0.95)
 
-                                product.price = price_numeric
+                                product.price = Decimal(price_numeric)
                                 self.repository.update_product(product)
 
                                 if(isInstallment):
                                     print("installment catched, product link: ", product.link)
                                     message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
-                                #else:
-                                #    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında artış oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}"
-                                    await self.telegram_service.send_message(message)
+                                    #await self.telegram_service.send_message(message)
+                                    print(message)
                             else:
                                 print("Product price is remaining the same")
                         else:
