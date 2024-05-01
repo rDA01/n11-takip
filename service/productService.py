@@ -45,8 +45,8 @@ class ProductService:
 
                                 if(isInstallment):
                                     print("installment catched, product link: ", product.link)
-                                    installment_rate = (old_price - price_numeric) / 100
-                                    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}. İndirim oranı: {installment_rate}"
+                                    installment_rate = ((old_price - price_numeric) / old_price) * 100
+                                    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}. İndirim oranı: %{installment_rate}"
                                     await self.telegram_service.send_message(message)
                                     #print(message)
                             else:
