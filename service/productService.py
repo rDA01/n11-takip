@@ -38,7 +38,7 @@ class ProductService:
                                 
                                 old_price = Decimal(product.price)
 
-                                isInstallment = Decimal(price_numeric) <= old_price * Decimal(0.95)
+                                isInstallment = Decimal(price_numeric) <= old_price * Decimal(0.92)
 
                                 product.price = Decimal(price_numeric)
                                 self.repository.update_product(product)
