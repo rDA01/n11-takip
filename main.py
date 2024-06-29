@@ -9,6 +9,8 @@ from data.repositories.productRepository import ProductRepository
 from service.productService import ProductService
 from service.telegramService import TelegramService
 
+import requests
+
 class LoggingConfigurator:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
@@ -35,29 +37,29 @@ class GatherPagesItems(LoggingConfigurator):
             if response.status_code == 200:
                 soup = BeautifulSoup(response.content, 'html.parser')
                 divs = soup.find_all('div', class_='p-card-chldrn-cntnr card-border')
-
                 for div in divs:
-                    h3 = div.find('h3', class_='prdct-desc-cntnr-ttl-w two-line-text')
+                    h3 = div.find('h3', class_='prdct-desc-cntnr-ttl-w')
                     a = div.find('a', href=True)
                     prc_box_dscntd = div.find('div', class_='prc-box-dscntd')
-                    
                     if h3 and a and prc_box_dscntd:
                         title = h3.get_text(strip=True)
+                        print(title)
                         href = a['href']
 
                         item =  self.product_repo.get_product_by_link(href)
+                        price_text = prc_box_dscntd.text.strip()
+                        price_text = price_text.replace('.', '').replace(',', '.')  # Replace comma with dot
+                        price = float(''.join(filter(lambda x: x.isdigit() or x == '.', price_text)))                        
+                        
                         if item is False:
-                            price_text = prc_box_dscntd.text.strip()
-                            price_text = price_text.replace('.', '').replace(',', '.')  # Replace comma with dot
-                            price = float(''.join(filter(lambda x: x.isdigit() or x == '.', price_text)))
+
 
                             product = Product(id=None,title=title, link=href, price=price)
                             
-                            self.product_repo.add_product(product)
-                        else:
-                            # Product already exists in the database
-                            print("Item exists.")
+                            self.product_repo.add_product(product)                    
+
                     else:
+                        
                         print("Incomplete data found in div, skipping.")
                 
                 div_count = len(divs)
@@ -98,7 +100,7 @@ async def Main():
     
     await new.gather_page_numbers()
 
-    telegram_service = TelegramService(bot_token='7043445528:AAF6FuY4eOBOVVOyZRhfK24pXb2E7yiK7r8', chat_id='-1002119312673')
+    telegram_service = TelegramService(bot_token='7472974345:AAGLXNzPyrik5KZJP3EQgLS_XzPCi9w7E0E', chat_id='-4284997039')
 
     productService = ProductService(product_repo, telegram_service)
 

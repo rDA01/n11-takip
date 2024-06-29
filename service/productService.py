@@ -30,6 +30,7 @@ class ProductService:
                         price_text = price_span.text.strip()
                         price_text = price_text.replace('.', '').replace(',', '.')  # Replace comma with dot
                         price_numeric = float(''.join(filter(lambda x: x.isdigit() or x == '.', price_text)))
+                        price_numeric = Decimal(price_numeric)
                         product = self.repository.get_product_by_link(link)
 
                         if product:
@@ -37,18 +38,24 @@ class ProductService:
                                 print("existing price: ", product.price, '\n', "new price: ", price_numeric)
                                 
                                 old_price = Decimal(product.price)
-
-                                isInstallment = Decimal(price_numeric) <= old_price * Decimal(0.92)
-
+                                
+                                price_numeric = Decimal(price_numeric)
+                                 
+                                isInstallment = Decimal(price_numeric) <= Decimal(old_price) * Decimal(0.92) 
                                 product.price = Decimal(price_numeric)
                                 self.repository.update_product(product)
 
                                 if(isInstallment):
                                     print("installment catched, product link: ", product.link)
-                                    installment_rate = ((old_price - price_numeric) / old_price) * 100
+                                    installment_rate = ((old_price - Decimal(price_numeric)) / old_price) * 100
+                                    old_price = "{:.2f}".format(old_price) 
+                                    price_numeric = "{:.2f}".format(price_numeric)
+                                    installment_rate = "{:.1f}".format(installment_rate)
                                     message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}. İndirim oranı: %{installment_rate}"
+
                                     await self.telegram_service.send_message(message)
-                                    #print(message)
+                                   
+                                
                             else:
                                 print("Product price is remaining the same")
                         else:
