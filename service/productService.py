@@ -51,7 +51,7 @@ class ProductService:
                                     old_price = "{:.2f}".format(old_price) 
                                     price_numeric = "{:.2f}".format(price_numeric)
                                     installment_rate = "{:.1f}".format(installment_rate)
-                                    message = f"{str(self.base_url) + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}. İndirim oranı: %{installment_rate}"
+                                    message = f"{str("m.trendyol.com") + str(link)} linkli, {product.title} başlıklı ürünün fiyatında indirim oldu. Önceki fiyat: {old_price}, Yeni fiyat: {price_numeric}. İndirim oranı: %{installment_rate}"
 
                                     await self.telegram_service.send_message(message)
                                    

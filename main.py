@@ -100,7 +100,7 @@ async def Main():
     
     await new.gather_page_numbers()
 
-    telegram_service = TelegramService(bot_token='7472974345:AAGLXNzPyrik5KZJP3EQgLS_XzPCi9w7E0E', chat_id='-4284997039')
+    telegram_service = TelegramService(bot_token='7472974345:AAGLXNzPyrik5KZJP3EQgLS_XzPCi9w7E0E', chat_id='-1002246478070')
 
     productService = ProductService(product_repo, telegram_service)
 
