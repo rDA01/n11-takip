@@ -25,8 +25,8 @@ class LoggingConfigurator:
         self.logger.addHandler(handler)
 
 class GatherPagesItems(LoggingConfigurator):
-    def __init__(self, product_repo):
-        self.base_url="https://www.trendyol.com/akilli-cep-telefonu-x-c109460?pi="
+    def __init__(self, product_repo,url):
+        self.base_url=url
         self.page_count=0
         self.item_count=0
         self.product_repo = product_repo
@@ -96,14 +96,17 @@ class GatherPagesItems(LoggingConfigurator):
 async def Main():
     product_repo = ProductRepository()
 
-    new = GatherPagesItems(product_repo)
+    smartphones = GatherPagesItems(product_repo,"https://www.trendyol.com/akilli-cep-telefonu-x-c109460?pi=")
     
-    await new.gather_page_numbers()
+    await smartphones.gather_page_numbers()
 
+    dysonproducts = GatherPagesItems(product_repo,"https://www.trendyol.com/dyson-dik-supurge-x-b102989-c109454?pi=")
+    await dysonproducts.gather_page_numbers()
+    
     telegram_service = TelegramService(bot_token='7472974345:AAGLXNzPyrik5KZJP3EQgLS_XzPCi9w7E0E', chat_id='-1002246478070')
 
     productService = ProductService(product_repo, telegram_service)
-
+    
     while True:
         await productService.updateProduct()
 
